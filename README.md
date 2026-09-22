@@ -24,9 +24,9 @@ npm run dev
 
 | 구분 | 내용 |
 | --- | --- |
-| 테이블 | sessions, periods, time_slots, members, member_sessions, member_period_status, member_availability, teams, team_members, team_schedule, schedule_versions |
+| 테이블 | sessions, periods, time_slots, members, member_sessions, member_period_status, member_available_hours, teams, team_members, team_schedule, schedule_versions |
 | 제약 | 부원 이름+구분명 유니크, 팀 이름 유니크, 같은 기간의 동일 요일·타임에 두 팀 배정 금지(부분 유니크 인덱스), 외래키 |
-| RPC | `save_member` (부원+세션+두 기간 시간 원자 저장), `save_team` (팀+팀원+시간 원자 저장), `confirm_schedule` (초안 전체를 스냅샷으로 원자 확정), `delete_sample_data` |
+| RPC | `save_member` (부원+세션+두 기간 시간 원자 저장), `save_team` (팀+팀원+시간 원자 저장), `confirm_schedule` (초안 전체를 스냅샷으로 원자 확정), `save_time_slots` (합주 타임 편집), `delete_sample_data` |
 | 정책 | 모든 테이블에 RLS 활성화 후 anon 역할에 읽기/쓰기 허용 (로그인 없는 구조) |
 | 기본값 | 세션 5종, 종강 전(월~금, 18~20시/20~22시, 12월 19일까지), 종강 후(월~일, 14~16시/16~18시/18~20시/20~22시, 12월 20일부터) |
 
@@ -38,6 +38,12 @@ npm run dev
 
 기간 설정(기준 연도, 종강일, 기간별 사용 요일)과 샘플 데이터 넣기/삭제는 상단 '기간 설정' 에서 합니다. 샘플 데이터는 `is_sample` 로 구분되어 '샘플' 표시가 붙습니다.
 
+## 가능한 시간과 합주 타임
+
+부원은 요일별로 0시부터 23시까지 1시간 단위로 가능한 시간을 입력합니다(`member_available_hours`).
+합주 타임(`time_slots`)은 운영자가 기간 설정에서 추가, 수정, 삭제하며, 어떤 타임에 가능한지는 그 타임에 포함된 모든 시간이 선택되어 있는지로 계산합니다.
+타임을 바꿔도 부원 입력은 그대로 유지됩니다.
+
 ## 미입력과 가능한 시간 없음의 구분
 
-`member_period_status.status` 가 `entered` 이면서 `member_availability` 행이 없으면 '가능한 시간 없음', 행이 없거나 `not_entered` 이면 '미입력' 입니다.
+`member_period_status.status` 가 `entered` 이면서 `member_available_hours` 행이 없으면 '가능한 시간 없음', 행이 없거나 `not_entered` 이면 '미입력' 입니다.
