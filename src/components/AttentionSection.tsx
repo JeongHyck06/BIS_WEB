@@ -56,7 +56,7 @@ export function AttentionSection({ data, onOpenMember, onOpenTeam }: Props) {
                 <span className="msg">{it.message}</span>
                 {it.teamId
                   ? <button type="button" className="btn btn-sm" onClick={() => onOpenTeam(it.teamId!)}>팀 열기</button>
-                  : it.memberId && <button type="button" className="btn btn-sm" onClick={() => onOpenMember(it.memberId!)}>시간표 입력하기</button>}
+                  : it.memberId && <button type="button" className="btn btn-sm" onClick={() => onOpenMember(it.memberId!)}>일정 입력하기</button>}
               </li>
             ))}
           </ul>

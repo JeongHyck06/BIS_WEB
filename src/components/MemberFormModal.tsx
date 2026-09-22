@@ -73,7 +73,7 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
         }
       }
       await saveMember({ id: memberId, name: name.trim(), nickname: nickname.trim(), memo, session_ids: sessionIds, availability })
-      toast.show(memberId ? '부원 정보를 저장했습니다.' : '부원을 등록했습니다.', 'success')
+      toast.show(memberId ? '일정을 저장했습니다.' : '일정을 등록했습니다.', 'success')
       await onSaved()
       onClose()
     } catch (err) {
@@ -118,7 +118,7 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
     return s
   }
 
-  const title = member ? `부원 정보 수정: ${memberDisplayName(member)}` : '부원 추가'
+  const title = member ? `일정 수정: ${memberDisplayName(member)}` : '본인 일정 추가'
 
   return (
     <Modal
@@ -136,11 +136,11 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
     >
       {!member && (
         <div className="field">
-          <label>기존 부원 검색</label>
-          <input className="input" placeholder="이미 등록된 부원이면 이름으로 검색해서 수정하세요" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <label>이미 등록한 일정 찾기</label>
+          <input className="input" placeholder="이미 일정을 등록했다면 이름으로 검색해서 수정하세요" value={search} onChange={(e) => setSearch(e.target.value)} />
           {search.trim() && (
             <div className="search-results">
-              {searchResults.length === 0 && <div className="search-item none">검색 결과가 없습니다. 아래에서 새로 등록하세요.</div>}
+              {searchResults.length === 0 && <div className="search-item none">검색 결과가 없습니다. 아래에서 새로 만드세요.</div>}
               {searchResults.map((m) => (
                 <button type="button" key={m.id} className="search-item" onClick={() => { setMemberId(m.id); setSearch('') }}>
                   <span>
