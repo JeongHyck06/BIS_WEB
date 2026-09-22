@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { confirmSchedule } from '../lib/api'
+import { confirmSchedule, deleteConfirmedVersion } from '../lib/api'
 import { ALL_DAYS, DAY_LABELS } from '../lib/constants'
 import { changedAfterConfirm, draftMatchesConfirmed, formatDate, formatDateTime, memberAvailability, memberDisplayName, slotTime, teamConflicts } from '../lib/logic'
 import type { AppData, Member, Period, SnapshotPeriod, SnapshotTeam, Team } from '../lib/types'
@@ -24,6 +24,7 @@ export function TeamScheduleSection({ data, isAdmin, onAddTeam, onOpenTeam, onCo
   const [view, setView] = useState<View>('draft')
   const [note, setNote] = useState('')
   const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const membersById = useMemo(() => new Map(data.members.map((m) => [m.id, m])), [data.members])
 
   const pendingCount = data.teams.filter((t) => !draftMatchesConfirmed(t, data.confirmed, data.periods)).length
@@ -49,6 +50,23 @@ export function TeamScheduleSection({ data, isAdmin, onAddTeam, onOpenTeam, onCo
       toast.show(err instanceof Error ? `확정 실패: ${err.message}` : '확정에 실패했습니다.', 'error')
     } finally {
       setConfirming(false)
+    }
+  }
+
+  const removeConfirmed = async () => {
+    if (!data.confirmed) return
+    const v = data.confirmed
+    const after = data.confirmedCount > 1 ? '삭제하면 바로 이전 확정본이 현재 확정본이 됩니다.' : '삭제하면 확정된 시간표가 없는 상태로 돌아갑니다.'
+    if (!window.confirm(`확정본 ${v.version_no}판을 삭제할까요?\n${after}\n초안은 그대로 남습니다.`)) return
+    setDeleting(true)
+    try {
+      await deleteConfirmedVersion(v.id)
+      toast.show(`확정본 ${v.version_no}판을 삭제했습니다.`, 'success')
+      await onConfirmed()
+    } catch (err) {
+      toast.show(err instanceof Error ? `삭제 실패: ${err.message}` : '삭제에 실패했습니다.', 'error')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -101,7 +119,8 @@ export function TeamScheduleSection({ data, isAdmin, onAddTeam, onOpenTeam, onCo
             <>
               <div className="confirm-bar">
                 <span>확정본 {data.confirmed.version_no}판, {formatDateTime(data.confirmed.confirmed_at)} 확정{data.confirmed.note && <span className="muted">, {data.confirmed.note}</span>}.</span>
-                <span className="muted">확정 당시의 팀원과 시간입니다. 이후 초안이 바뀌어도 이 표는 바뀌지 않습니다.</span>
+                <span className="muted grow">확정 당시의 팀원과 시간입니다. 이후 초안이 바뀌어도 이 표는 바뀌지 않습니다.{data.confirmedCount > 1 && ` 보관 중인 확정본 ${data.confirmedCount}개.`}</span>
+                {isAdmin && <button type="button" className="btn btn-danger" onClick={removeConfirmed} disabled={deleting}>{deleting ? '삭제 중' : '확정본 삭제하기'}</button>}
               </div>
               <div className="schedule-grid">
                 {data.confirmed.snapshot.periods.map((sp) => (

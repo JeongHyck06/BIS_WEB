@@ -29,6 +29,7 @@ export async function loadAll(): Promise<AppData> {
         tmRes,
         tsRes,
         verRes,
+        verCountRes,
     ] = await Promise.all([
         supabase.from('sessions').select('*').order('sort_order'),
         supabase.from('periods').select('*').order('sort_order'),
@@ -47,6 +48,7 @@ export async function loadAll(): Promise<AppData> {
             .select('*')
             .order('version_no', { ascending: false })
             .limit(1),
+        supabase.from('schedule_versions').select('id', { count: 'exact', head: true }),
     ]);
 
     for (const r of [
@@ -61,6 +63,7 @@ export async function loadAll(): Promise<AppData> {
         tmRes,
         tsRes,
         verRes,
+        verCountRes,
     ]) {
         throwIf(r.error, '데이터를 불러오지 못했습니다.');
     }
@@ -137,7 +140,9 @@ export async function loadAll(): Promise<AppData> {
 
     const confirmed = ((verRes.data ?? [])[0] as ScheduleVersion | undefined) ?? null;
 
-    return { sessions, periods, members, teams, confirmed };
+    const confirmedCount = verCountRes.count ?? (confirmed ? 1 : 0);
+
+    return { sessions, periods, members, teams, confirmed, confirmedCount };
 }
 
 export async function saveMember(payload: SaveMemberPayload): Promise<string> {
@@ -166,6 +171,12 @@ export async function confirmSchedule(note: string): Promise<ScheduleVersion> {
     const { data, error } = await supabase.rpc('confirm_schedule', { p_note: note });
     throwIf(error, '시간표 확정에 실패했습니다.');
     return data as ScheduleVersion;
+}
+
+/** 확정본 삭제. 최신 확정본을 지우면 이전 확정본이 현재 확정본이 된다. */
+export async function deleteConfirmedVersion(id: string): Promise<void> {
+    const { error } = await supabase.from('schedule_versions').delete().eq('id', id);
+    throwIf(error, '확정본 삭제에 실패했습니다.');
 }
 
 export async function updatePeriod(

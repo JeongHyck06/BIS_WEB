@@ -116,6 +116,8 @@ export interface AppData {
     members: Member[];
     teams: Team[];
     confirmed: ScheduleVersion | null;
+    /** 보관 중인 확정본 개수 */
+    confirmedCount: number;
 }
 
 /** save_member RPC payload */
