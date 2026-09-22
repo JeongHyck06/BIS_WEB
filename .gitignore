@@ -26,3 +26,6 @@ dist-ssr
 # 로컬 환경 변수
 .env.local
 .env
+.vercel
+.env*
+!.env.example
