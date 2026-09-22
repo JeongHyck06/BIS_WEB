@@ -213,7 +213,7 @@ export async function insertSampleData(data: AppData): Promise<void> {
             session_ids: sess('guitar', 'vocal'),
             availability: {
                 [before.id]: { entered: true, slots: slots('01', '11', '12', '41', '42') },
-                [after.id]: { entered: true, slots: slots('01', '02', '03', '12', '52', '62') },
+                [after.id]: { entered: true, slots: slots('01', '02', '04', '13', '53', '63') },
             },
         },
         {
@@ -227,7 +227,7 @@ export async function insertSampleData(data: AppData): Promise<void> {
                 [before.id]: { entered: true, slots: slots('01', '02', '11', '31', '32', '41') },
                 [after.id]: {
                     entered: true,
-                    slots: slots('01', '02', '11', '12', '21', '22', '32', '33'),
+                    slots: slots('01', '02', '11', '13', '21', '23', '33', '34'),
                 },
             },
         },
@@ -242,7 +242,7 @@ export async function insertSampleData(data: AppData): Promise<void> {
                 [before.id]: { entered: true, slots: slots('02', '12', '22', '32', '42') },
                 [after.id]: {
                     entered: true,
-                    slots: slots('03', '13', '23', '33', '43', '53', '63'),
+                    slots: slots('04', '14', '24', '34', '44', '54', '64'),
                 },
             },
         },
@@ -276,7 +276,7 @@ export async function insertSampleData(data: AppData): Promise<void> {
             session_ids: sess('vocal', 'keyboard'),
             availability: {
                 [before.id]: null,
-                [after.id]: { entered: true, slots: slots('02', '12', '22', '32', '42', '52') },
+                [after.id]: { entered: true, slots: slots('03', '13', '23', '33', '43', '53') },
             },
         },
     ];
@@ -304,7 +304,7 @@ export async function insertSampleData(data: AppData): Promise<void> {
         member_ids: [ids[4], ids[6], ids[2]],
         schedule: {
             [before.id]: { day: null, slot_index: null, override_note: '' },
-            [after.id]: { day: 1, slot_index: 2, override_note: '' },
+            [after.id]: { day: 1, slot_index: 3, override_note: '' },
         },
     });
 }
