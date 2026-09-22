@@ -30,19 +30,36 @@ export function timeLabel(period: Period, day: number | null, slotIndex: number 
 
 export type AvailabilityState = 'available' | 'unavailable' | 'not_entered'
 
-export function memberAvailability(member: Member, periodId: string, day: number, slotIndex: number): AvailabilityState {
-  const entry = member.periods[periodId]
-  if (!entry || entry.status !== 'entered') return 'not_entered'
-  return entry.slots.has(slotKey(day, slotIndex)) ? 'available' : 'unavailable'
+/** "18:00:00" -> 18, "24:00:00" -> 24 */
+export const hourOf = (t: string) => Number(t.split(':')[0])
+
+/** 타임에 포함되는 시각 목록 (예: 18시부터 20시 -> [18, 19]) */
+export function slotHours(slot: { start_time: string; end_time: string }): number[] {
+  const out: number[] = []
+  for (let h = hourOf(slot.start_time); h < hourOf(slot.end_time); h++) out.push(h)
+  return out
 }
 
-/** 선택한 부원들이 모두 가능한 시간 (교집합). 미입력 부원은 어떤 시간에도 가능으로 보지 않는다. */
+export type PeriodLike = { id: string; slots: { slot_index: number; start_time: string; end_time: string }[] }
+
+/** 부원이 해당 타임의 모든 시간에 가능한지 */
+export function memberAvailability(member: Member, period: PeriodLike, day: number, slotIndex: number): AvailabilityState {
+  const entry = member.periods[period.id]
+  if (!entry || entry.status !== 'entered') return 'not_entered'
+  const slot = period.slots.find((s) => s.slot_index === slotIndex)
+  if (!slot) return 'unavailable'
+  const hours = slotHours(slot)
+  if (hours.length === 0) return 'unavailable'
+  return hours.every((h) => entry.hours.has(slotKey(day, h))) ? 'available' : 'unavailable'
+}
+
+/** 선택한 부원들이 모두 가능한 타임 (교집합). 미입력 부원은 어떤 시간에도 가능으로 보지 않는다. */
 export function commonSlots(members: Member[], period: Period): Set<string> {
   const result = new Set<string>()
   if (members.length === 0) return result
   for (const day of period.active_days) {
     for (const slot of period.slots) {
-      if (members.every((m) => memberAvailability(m, period.id, day, slot.slot_index) === 'available')) {
+      if (members.every((m) => memberAvailability(m, period, day, slot.slot_index) === 'available')) {
         result.add(slotKey(day, slot.slot_index))
       }
     }
@@ -64,7 +81,7 @@ export function teamConflicts(team: Team, period: Period, membersById: Map<strin
   for (const id of team.member_ids) {
     const m = membersById.get(id)
     if (!m) continue
-    const state = memberAvailability(m, period.id, s.day, s.slot_index)
+    const state = memberAvailability(m, period, s.day, s.slot_index)
     if (state === 'unavailable') out.push({ member: m, state, reason: '참석 불가로 등록됨' })
     else if (state === 'not_entered') out.push({ member: m, state, reason: `${period.name} 시간표 미입력` })
   }

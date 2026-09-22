@@ -200,7 +200,7 @@ function DraftTable({ period, data, membersById, onOpenTeam }: { period: Period;
                           {t.member_ids.map((id) => {
                             const m = membersById.get(id)
                             if (!m) return null
-                            const bad = memberAvailability(m, period.id, d, slot.slot_index) !== 'available'
+                            const bad = memberAvailability(m, period, d, slot.slot_index) !== 'available'
                             return (
                               <span key={id} className={`member${bad ? ' bad' : ''}`} title={bad ? '참석 불가 또는 미입력' : undefined}>
                                 {memberDisplayName(m)}
@@ -250,7 +250,7 @@ function ConfirmedTable({ period, teams, data, onOpenTeam }: { period: SnapshotP
                   const changed = liveTeam ? changedAfterConfirm(liveTeam, data.confirmed, membersById) : []
                   const conflicts = t.members.filter((sm) => {
                     const m = membersById.get(sm.id)
-                    return m ? memberAvailability(m, period.id, d, slot.slot_index) !== 'available' : false
+                    return m ? memberAvailability(m, period, d, slot.slot_index) !== 'available' : false
                   })
                   return (
                     <td key={d} className={active ? '' : 'day-inactive'}>

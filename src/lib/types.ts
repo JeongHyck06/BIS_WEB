@@ -33,8 +33,8 @@ export type EntryStatus = 'not_entered' | 'entered';
 export interface PeriodEntry {
     status: EntryStatus;
     updated_at: string | null;
-    /** "day-slot" 키 집합 */
-    slots: Set<string>;
+    /** "day-hour" 키 집합 (0시부터 23시) */
+    hours: Set<string>;
 }
 
 export interface Member {
@@ -110,6 +110,13 @@ export interface ScheduleVersion {
     snapshot: { periods: SnapshotPeriod[]; teams: SnapshotTeam[] };
 }
 
+/** 합주 타임 편집 입력 */
+export interface TimeSlotInput {
+    slot_index: number | null;
+    start_hour: number;
+    end_hour: number;
+}
+
 export interface AppData {
     sessions: Session[];
     periods: Period[];
@@ -130,7 +137,7 @@ export interface SaveMemberPayload {
     session_ids: string[];
     availability: Record<
         string,
-        { entered: boolean; slots: { day: number; slot_index: number }[] } | null
+        { entered: boolean; hours: { day: number; hour: number }[] } | null
     >;
 }
 

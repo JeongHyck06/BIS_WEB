@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { deleteMember, saveMember } from '../lib/api'
-import { memberDisplayName } from '../lib/logic'
-import { slotKey } from '../lib/constants'
+import { memberDisplayName, slotHours, slotTime } from '../lib/logic'
+import { GRID_HOURS, slotKey } from '../lib/constants'
 import type { AppData, Member, Period } from '../lib/types'
 import { AvailabilityGrid } from './AvailabilityGrid'
 import { Modal, Notice, SessionText, sessionText, useToast } from './ui'
@@ -13,7 +13,7 @@ interface Props {
   onSaved: () => Promise<void>
 }
 
-interface PeriodDraft { entered: boolean; slots: Set<string> }
+interface PeriodDraft { entered: boolean; hours: Set<string> }
 
 export function MemberFormModal({ data, memberId: initialId, onClose, onSaved }: Props) {
   const [memberId, setMemberId] = useState<string | null>(initialId)
@@ -33,7 +33,7 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
     const draft: Record<string, PeriodDraft> = {}
     for (const p of data.periods) {
       const e = member?.periods[p.id]
-      draft[p.id] = { entered: e?.status === 'entered', slots: new Set(e?.slots ?? []) }
+      draft[p.id] = { entered: e?.status === 'entered', hours: new Set(e?.hours ?? []) }
     }
     return draft
   })
@@ -64,12 +64,12 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
     setSaving(true)
     setSaveError(null)
     try {
-      const availability: Record<string, { entered: boolean; slots: { day: number; slot_index: number }[] }> = {}
+      const availability: Record<string, { entered: boolean; hours: { day: number; hour: number }[] }> = {}
       for (const p of data.periods) {
         const d = periodDraft[p.id]
         availability[p.id] = {
           entered: d.entered,
-          slots: d.entered ? [...d.slots].map((k) => { const [day, slot_index] = k.split('-').map(Number); return { day, slot_index } }) : [],
+          hours: d.entered ? [...d.hours].map((k) => { const [day, hour] = k.split('-').map(Number); return { day, hour } }) : [],
         }
       }
       await saveMember({ id: memberId, name: name.trim(), nickname: nickname.trim(), memo, session_ids: sessionIds, availability })
@@ -104,9 +104,17 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
   const setPeriod = (p: Period, patch: Partial<PeriodDraft>) =>
     setPeriodDraft((prev) => ({ ...prev, [p.id]: { ...prev[p.id], ...patch } }))
 
+  const HOURS = GRID_HOURS
+  const hourRows = HOURS.map((h) => ({ key: h, label: `${h}시` }))
   const allKeys = (p: Period) => {
     const s = new Set<string>()
-    for (const d of p.active_days) for (const slot of p.slots) s.add(slotKey(d, slot.slot_index))
+    for (const d of p.active_days) for (const h of HOURS) s.add(slotKey(d, h))
+    return s
+  }
+  /** 합주 타임에 포함된 시간만 */
+  const slotKeys = (p: Period) => {
+    const s = new Set<string>()
+    for (const d of p.active_days) for (const slot of p.slots) for (const h of slotHours(slot)) s.add(slotKey(d, h))
     return s
   }
 
@@ -199,9 +207,9 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
             <div className="legend">
               {p.name} 가능한 시간
               {d.entered
-                ? d.slots.size === 0
+                ? d.hours.size === 0
                   ? <span className="status bad">입력 완료, 가능한 시간 없음</span>
-                  : <span className="status ok">입력 완료, {d.slots.size}칸 선택</span>
+                  : <span className="status ok">입력 완료, {d.hours.size}시간 선택</span>
                 : <span className="status">미입력</span>}
             </div>
             <div className="grid-actions">
@@ -210,12 +218,14 @@ function MemberEditor({ data, memberId, initialId, setMemberId, onClose, onSaved
                 {p.name} 시간표 입력
               </label>
               <span className="spacer" />
-              <button type="button" className="btn btn-sm" disabled={!d.entered || d.slots.size === total} onClick={() => setPeriod(p, { slots: allKeys(p) })}>전체 선택</button>
-              <button type="button" className="btn btn-sm" disabled={!d.entered || d.slots.size === 0} onClick={() => setPeriod(p, { slots: new Set() })}>전체 해제</button>
+              <button type="button" className="btn btn-sm" disabled={!d.entered} onClick={() => setPeriod(p, { hours: new Set([...d.hours, ...slotKeys(p)]) })}>합주 타임 전체 선택</button>
+              <button type="button" className="btn btn-sm" disabled={!d.entered || d.hours.size === total} onClick={() => setPeriod(p, { hours: allKeys(p) })}>전체 선택</button>
+              <button type="button" className="btn btn-sm" disabled={!d.entered || d.hours.size === 0} onClick={() => setPeriod(p, { hours: new Set() })}>전체 해제</button>
             </div>
             {d.entered ? (
               <>
-                <AvailabilityGrid period={p} value={d.slots} onChange={(next) => setPeriod(p, { slots: next })} />
+                <p className="muted small mb8">합주 타임: {p.slots.map((slot) => `${slot.label} ${slotTime(slot)}`).join(', ')}. 각 칸은 그 시각부터 1시간이며, 10시부터 22시까지 표시합니다.</p>
+                <AvailabilityGrid period={p} rows={hourRows} compact value={d.hours} onChange={(next) => setPeriod(p, { hours: next })} />
                 <p className="hint mt8 muted small">칸을 클릭하거나 드래그해서 선택하세요. 아무 칸도 선택하지 않고 저장하면 가능한 시간 없음으로 기록됩니다.</p>
               </>
             ) : (

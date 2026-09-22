@@ -147,6 +147,14 @@ a { color: var(--accent-text); }
 .avail-cell.picked.conflict { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
 .avail-cell .sub { font-size: 11px; line-height: 1.15; }
 
+.avail-grid.compact { gap: 3px; }
+.avail-grid.compact .avail-cell { height: 24px; border-radius: 2px; }
+.avail-grid.compact .sl { font-size: 12px; padding-right: 6px; }
+.avail-grid.compact .hd { position: sticky; top: 0; background: var(--bg); z-index: 1; }
+.slot-editor { display: flex; flex-direction: column; gap: 6px; }
+.slot-editor-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.slot-editor-row .lbl { min-width: 44px; font-weight: 500; }
+.slot-editor-row .select { width: auto; }
 .grid-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
 .grid-actions .spacer { flex: 1; }
 

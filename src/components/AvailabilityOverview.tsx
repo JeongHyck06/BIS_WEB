@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ALL_DAYS, DAY_LABELS, slotKey } from '../lib/constants'
-import { commonSlots, dayLabel, memberDisplayName, slotTime } from '../lib/logic'
+import { commonSlots, dayLabel, memberAvailability, memberDisplayName, slotTime } from '../lib/logic'
 import type { AppData, Member, Period } from '../lib/types'
 import { SessionText } from './ui'
 
@@ -44,7 +44,7 @@ export function AvailabilityOverview({ data, onAddMember, onOpenMember }: Props)
   }
 
   const cellMembers = (day: number, slotIndex: number): Member[] =>
-    filtered.filter((m) => m.periods[period.id]?.status === 'entered' && m.periods[period.id].slots.has(slotKey(day, slotIndex)))
+    filtered.filter((m) => memberAvailability(m, period, day, slotIndex) === 'available')
 
   if (!period) return null
 
@@ -53,7 +53,7 @@ export function AvailabilityOverview({ data, onAddMember, onOpenMember }: Props)
       <div className="section-head">
         <div>
           <h2>부원 시간표 등록 현황</h2>
-          <p className="sub">각 칸에는 그 시간에 가능하다고 등록한 부원이 표시됩니다. 이름을 누르면 시간표를 수정할 수 있습니다.</p>
+          <p className="sub">각 칸에는 그 타임의 모든 시간에 가능하다고 등록한 부원이 표시됩니다. 이름을 누르면 시간표를 수정할 수 있습니다.</p>
         </div>
         <div className="section-actions">
           <button type="button" className="btn btn-primary" onClick={onAddMember}>부원 추가하기</button>

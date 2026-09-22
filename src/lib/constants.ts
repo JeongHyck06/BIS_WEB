@@ -25,6 +25,11 @@ export const SESSION_EMOJI: Record<string, string> = {
   keyboard: '🎹',
 }
 
+/** 가능한 시간 격자와 합주 타임이 다루는 시간 범위: 10시부터 22시 */
+export const GRID_HOUR_START = 10
+export const GRID_HOUR_END = 22
+export const GRID_HOURS = Array.from({ length: GRID_HOUR_END - GRID_HOUR_START }, (_, i) => GRID_HOUR_START + i)
+
 export const slotKey = (day: number, slot: number) => `${day}-${slot}`
 export const parseSlotKey = (key: string) => {
   const [d, s] = key.split('-').map(Number)

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { deleteTeam, saveTeam } from '../lib/api'
 import { TEAM_COLORS, slotKey } from '../lib/constants'
-import { commonSlots, dayLabel, draftMatchesConfirmed, memberAvailability, memberDisplayName, pickTeamColor, snapshotTeam, timeLabel } from '../lib/logic'
+import { commonSlots, dayLabel, draftMatchesConfirmed, memberAvailability, memberDisplayName, pickTeamColor, slotTime, snapshotTeam, timeLabel } from '../lib/logic'
 import type { AppData, Member, Period } from '../lib/types'
 import { AvailabilityGrid } from './AvailabilityGrid'
 import { Modal, Notice, SessionText, useToast } from './ui'
@@ -77,7 +77,7 @@ export function TeamFormModal({ data, teamId, onClose, onSaved, readOnly = false
     if (!key) return []
     const [day, slot_index] = key.split('-').map(Number)
     return selectedMembers
-      .map((m) => ({ member: m, state: memberAvailability(m, p.id, day, slot_index) }))
+      .map((m) => ({ member: m, state: memberAvailability(m, p, day, slot_index) }))
       .filter((x) => x.state !== 'available')
   }
   const anyConflict = data.periods.some((p) => conflictsFor(p).length > 0)
@@ -232,6 +232,7 @@ export function TeamFormModal({ data, teamId, onClose, onSaved, readOnly = false
             )}
             <AvailabilityGrid
               period={p}
+              rows={p.slots.map((slot) => ({ key: slot.slot_index, label: slot.label, sub: slotTime(slot) }))}
               single
               readOnly={readOnly}
               value={s.key ? new Set([s.key]) : new Set()}
@@ -242,7 +243,7 @@ export function TeamFormModal({ data, teamId, onClose, onSaved, readOnly = false
                 const other = takenBy[p.id].get(key)
                 if (other) return { className: 'taken', disabled: true, title: `${other} 배정됨`, content: <span className="sub">{other}</span> }
                 if (selectedMembers.length === 0) return undefined
-                const ok = selectedMembers.filter((m) => memberAvailability(m, p.id, day, slotIndex) === 'available').length
+                const ok = selectedMembers.filter((m) => memberAvailability(m, p, day, slotIndex) === 'available').length
                 const isPicked = s.key === key
                 const cls = isPicked && ok < selectedMembers.length ? 'conflict' : undefined
                 return { className: cls, content: <span className="sub">{ok}명</span>, title: `팀원 ${selectedMembers.length}명 중 ${ok}명 가능` }
