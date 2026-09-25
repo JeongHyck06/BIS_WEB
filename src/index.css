@@ -111,7 +111,7 @@ a { color: var(--accent-text); }
 .cell-count { font-size: 12px; color: var(--text-2); margin-bottom: 4px; display: flex; justify-content: space-between; }
 .cell-count .common { color: var(--accent-text); font-weight: 500; }
 .name-list { display: flex; flex-direction: column; gap: 6px; }
-.name-row { display: flex; flex-direction: column; line-height: 1.3; }
+.name-row { display: flex; gap: 4px; align-items: baseline; flex-wrap: wrap; line-height: 1.3; padding: 2px 6px; border-radius: 2px; }
 .name-row .name { background: none; border: none; padding: 0; font: inherit; color: var(--text); cursor: pointer; text-align: left; }
 .name-row .name:hover { text-decoration: underline; text-underline-offset: 2px; }
 .name-row .name.selected { color: var(--accent-text); font-weight: 500; }

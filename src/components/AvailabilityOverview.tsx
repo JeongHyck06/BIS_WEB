@@ -181,7 +181,7 @@ export function AvailabilityOverview({ data, onAddMember, onOpenMember }: Props)
                               {ms.length > 0 && (
                                 <div className="name-list">
                                   {ms.map((m) => (
-                                    <div key={m.id} className="name-row">
+                                    <div key={m.id} className="name-row" style={{ background: `${sessionsOf(m)[0]?.color ?? '#888888'}1f` }}>
                                       <button type="button" className={`name${selected.has(m.id) ? ' selected' : ''}`} onClick={() => onOpenMember(m.id)}>{memberDisplayName(m)}</button>
                                       <SessionText sessions={sessionsOf(m)} />
                                     </div>

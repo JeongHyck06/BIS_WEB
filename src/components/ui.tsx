@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { SESSION_EMOJI } from '../lib/constants'
 import type { Session } from '../lib/types'
 
 // ---------- Toast ----------
@@ -59,12 +58,12 @@ export function Modal({ title, onClose, children, footer, wide }: {
 }
 
 // ---------- Session text ----------
-export const sessionText = (s: Session) => `${SESSION_EMOJI[s.code] ?? ''} ${s.name}`.trim()
+export const sessionText = (s: Session) => s.name
 
-/** 세션 목록을 "🎤 보컬, 🎸 기타" 형태의 텍스트로 */
+/** 세션 목록을 "(보컬, 기타)" 형태의 텍스트로 */
 export function SessionText({ sessions, className }: { sessions: Session[]; className?: string }) {
   if (sessions.length === 0) return null
-  return <span className={className ?? 'sessions'}>{sessions.map(sessionText).join(', ')}</span>
+  return <span className={className ?? 'sessions'}>({sessions.map(sessionText).join(', ')})</span>
 }
 
 export function Notice({ kind = 'info', children }: { kind?: 'info' | 'warn' | 'danger' | 'success'; children: ReactNode }) {

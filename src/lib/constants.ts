@@ -16,15 +16,6 @@ export const TEAM_COLORS = [
   '#9a7a8a', // 자회색
 ]
 
-/** 세션 이모지 (세션을 나타낼 때만 사용) */
-export const SESSION_EMOJI: Record<string, string> = {
-  vocal: '🎤',
-  guitar: '🎸',
-  bass: '🎸',
-  drum: '🥁',
-  keyboard: '🎹',
-}
-
 /** 가능한 시간 격자와 합주 타임이 다루는 시간 범위: 10시부터 22시 */
 export const GRID_HOUR_START = 10
 export const GRID_HOUR_END = 22
